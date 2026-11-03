@@ -1,5 +1,5 @@
 -- Views expostas ao agente e permissões do role somente leitura "agent_ro".
--- Pré-requisito: o role agent_ro já existe (criado por scripts/load_data.py).
+-- Pré-requisito: o role agent_ro já existe (criado por emporio_agent/load_data.py).
 
 -- Catálogo com as regras de preço já aplicadas, para o LLM não calcular preço.
 --   * promo_*   : só preenchidos se existir promoção ATIVA (is_active) para o produto.

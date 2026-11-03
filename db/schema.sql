@@ -1,5 +1,5 @@
 -- Schema relacional da loja (schema "shop").
--- Recriado do zero a cada execução de scripts/load_data.py (idempotente).
+-- Recriado do zero a cada execução de emporio_agent/load_data.py (idempotente).
 
 DROP SCHEMA IF EXISTS shop CASCADE;
 CREATE SCHEMA shop;

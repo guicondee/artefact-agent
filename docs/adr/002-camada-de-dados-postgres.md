@@ -21,7 +21,7 @@ Um perfil dos CSVs, feito antes de modelar, encontrou:
 ## Decisão
 
 1. **Modelo relacional tipado** em `db/schema.sql` (schema `shop`): `numeric` para dinheiro, `date` para datas, `jsonb` para `specs`, chaves estrangeiras e `CHECK`s (status válidos, preço positivo, estoque não negativo, formato do código de rastreio).
-2. **Tratamento no carregamento** (`scripts/load_data.py`): campos vazios viram `NULL`; `payment_method` (`credit_12x`) é dividido em `payment_method` (`credit`) e `installments` (`12`); e-mails em minúsculas; tudo em uma transação e idempotente (recria o schema a cada execução). `total_brl` é tratado como o valor efetivamente cobrado, não recalculado.
+2. **Tratamento no carregamento** (`emporio_agent/load_data.py`): campos vazios viram `NULL`; `payment_method` (`credit_12x`) é dividido em `payment_method` (`credit`) e `installments` (`12`); e-mails em minúsculas; tudo em uma transação e idempotente (recria o schema a cada execução). `total_brl` é tratado como o valor efetivamente cobrado, não recalculado.
 3. **Índice único parcial** garantindo no máximo uma promoção ativa por produto.
 4. **Regras de negócio na view `shop.v_catalog`**, não no LLM: preço promocional calculado só para promoção ativa, preço PIX (5%) só quando não há promoção, e `availability` (`in_stock`, `out_of_stock`, `discontinued`, `coming_soon`).
 5. **Menor privilégio:** o agente usa o role `agent_ro`, que só tem `SELECT` em `v_catalog`. Tabelas base, entre elas as de clientes e pedidos, ficam inacessíveis a ele.
@@ -38,7 +38,7 @@ Um perfil dos CSVs, feito antes de modelar, encontrou:
 
 ## Consequências
 
-- **Positivas:** regras de preço em um só lugar e testáveis em SQL; o banco impõe as permissões, mesmo que o LLM gere SQL inesperado; carga reproduzível com um comando (`python scripts/load_data.py`).
+- **Positivas:** regras de preço em um só lugar e testáveis em SQL; o banco impõe as permissões, mesmo que o LLM gere SQL inesperado; carga reproduzível com um comando (`python -m emporio_agent.load_data`).
 - **Negativas / riscos:**
   - A regra "PIX 5%" fica duplicada entre o manual e a view; se a política mudar, é preciso atualizar a view.
   - As anomalias de dados (produto 130, produto 136 descontinuado com estoque, categorias sem produtos) são tratadas pelo agente na resposta, não corrigidas no dado.

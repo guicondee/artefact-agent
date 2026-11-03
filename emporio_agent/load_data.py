@@ -1,7 +1,7 @@
 """Carrega os CSVs de data/ no Postgres (schema "shop").
 
-Uso (com o banco no ar via `docker compose up -d`):
-    python scripts/load_data.py
+Uso (na raiz do projeto, com o banco no ar via `docker compose up -d`):
+    python -m emporio_agent.load_data
 
 Passos, tudo em uma única transação (ou carrega tudo, ou nada):
     1. recria o schema (db/schema.sql)
@@ -15,27 +15,12 @@ import json
 import os
 from datetime import date
 from decimal import Decimal
-from pathlib import Path
 
 import psycopg
-from dotenv import load_dotenv
 from psycopg import sql
 from psycopg.types.json import Jsonb
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
-DB_DIR = ROOT / "db"
-
-load_dotenv(ROOT / ".env")
-
-
-def get_dsn() -> str:
-    user = os.getenv("POSTGRES_USER", "emporio")
-    password = os.getenv("POSTGRES_PASSWORD", "emporio_dev")
-    host = os.getenv("POSTGRES_HOST", "localhost")
-    port = os.getenv("POSTGRES_PORT", "5433")
-    db = os.getenv("POSTGRES_DB", "emporio")
-    return f"postgresql://{user}:{password}@{host}:{port}/{db}"
+from emporio_agent.config import DATA_DIR, DB_DIR, database_url
 
 
 # --------------------------------------------------------------------------- #
@@ -140,7 +125,7 @@ def ensure_readonly_role(conn: psycopg.Connection) -> None:
 
 
 def main() -> None:
-    with psycopg.connect(get_dsn()) as conn:  # commit ao sair; rollback em caso de erro
+    with psycopg.connect(database_url()) as conn:  # commit ao sair; rollback em caso de erro
         conn.execute((DB_DIR / "schema.sql").read_text(encoding="utf-8"))
         counts = load_all(conn)
         ensure_readonly_role(conn)
