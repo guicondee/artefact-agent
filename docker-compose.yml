@@ -1,0 +1,25 @@
+services:
+  db:
+    # Postgres 16 com a extensão pgvector já instalada
+    image: pgvector/pgvector:pg16
+    container_name: emporio_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-emporio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-emporio_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-emporio}
+    ports:
+      # Porta do host configurável (5433 por padrão, evita conflito com um Postgres local)
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - emporio_pgdata:/var/lib/postgresql/data
+      # Scripts executados apenas na primeira inicialização do volume
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-emporio} -d ${POSTGRES_DB:-emporio}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  emporio_pgdata:
