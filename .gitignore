@@ -7,3 +7,6 @@ __pycache__/
 .langgraph_api/
 *.egg-info/
 dist/
+.cursor/
+/smart_commit.py
+COMMIT_GUIDE.md
