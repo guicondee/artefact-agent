@@ -1,0 +1,8 @@
+# Python 3.12. Versoes resolvidas e validadas em conjunto em 2026-11-03.
+langgraph==1.2.19
+langchain-core==1.7.4
+langchain-deepseek==1.1.1
+langchain-google-genai==4.4.2
+langchain-postgres==0.0.19
+psycopg[binary]==3.3.7
+python-dotenv==1.2.4
