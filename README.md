@@ -8,7 +8,7 @@ O ciclo é o ReAct do LangGraph, com `deepseek-flash`. Os dados ficam num Postgr
 
 - Docker, com `docker compose`
 - Python 3.12
-- Chaves em `.env` (não commitar): `DEEPSEEK_API_KEY` e `GOOGLE_API_KEY`. `LANGSMITH_API_KEY` entra para o Studio, o tracing e a avaliação
+- Chaves em `.env`: `DEEPSEEK_API_KEY` e `GOOGLE_API_KEY`. `LANGSMITH_API_KEY` entra para o Studio, o tracing e a avaliação
 
 ```bash
 cp .env.example .env
