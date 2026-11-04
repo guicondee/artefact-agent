@@ -26,6 +26,11 @@ from emporio_agent.policies import load_policy_chunks
 
 COLLECTION = "politicas"
 
+# Cache: o PGVector registra tabelas no metadata do SQLAlchemy. Se instanciado mais de uma
+# vez no mesmo processo, o SQLAlchemy levanta InvalidRequestError. A solução é criar uma
+# única instância por (embeddings, read_only) e reutilizar.
+_store_cache: dict[tuple[int, bool], PGVector] = {}
+
 
 def default_embeddings() -> Embeddings:
     # O LangChain usa RETRIEVAL_DOCUMENT ao indexar e RETRIEVAL_QUERY ao buscar.
@@ -37,21 +42,29 @@ def default_embeddings() -> Embeddings:
 
 
 def get_store(embeddings: Embeddings, read_only: bool = False) -> PGVector:
-    """Vector store das políticas. `read_only=True` conecta como agent_ro."""
-    return PGVector(
-        embeddings=embeddings,
-        collection_name=COLLECTION,
-        connection=database_url(read_only).replace("postgresql://", "postgresql+psycopg://"),
-        embedding_length=EMBEDDING_DIM,
-        create_extension=False,  # a extensão já é criada em docker/initdb
-        engine_args={"connect_args": {"options": "-csearch_path=rag,public"}},
-    )
+    """Vector store das políticas. `read_only=True` conecta como agent_ro.
+
+    O store é criado uma vez e reutilizado no mesmo processo para evitar conflitos de
+    metadados do SQLAlchemy.
+    """
+    key = (id(embeddings), read_only)
+    if key not in _store_cache:
+        _store_cache[key] = PGVector(
+            embeddings=embeddings,
+            collection_name=COLLECTION,
+            connection=database_url(read_only).replace("postgresql://", "postgresql+psycopg://"),
+            embedding_length=EMBEDDING_DIM,
+            create_extension=False,
+            engine_args={"connect_args": {"options": "-csearch_path=rag,public"}},
+        )
+    return _store_cache[key]
 
 
 def index_policies(embeddings: Embeddings | None = None) -> int:
     """Recria o schema rag e indexa todos os chunks do manual."""
+    _store_cache.clear()  # o schema é recriado, então qualquer store anterior é inválido
     chunks = load_policy_chunks()
-    with psycopg.connect(database_url()) as conn:  # dono do banco: cria schema e tabelas
+    with psycopg.connect(database_url()) as conn:
         conn.execute((DB_DIR / "rag.sql").read_text(encoding="utf-8"))
     store = get_store(embeddings or default_embeddings())
     store.add_documents(chunks)
