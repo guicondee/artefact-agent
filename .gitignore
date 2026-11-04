@@ -1,4 +1,5 @@
 .env
+.emporio_thread
 .venv/
 __pycache__/
 *.pyc
@@ -10,3 +11,5 @@ dist/
 .cursor/
 /smart_commit.py
 COMMIT_GUIDE.md
+ 
+.smart-commit-context.md
