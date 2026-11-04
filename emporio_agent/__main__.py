@@ -13,7 +13,7 @@ Dentro da conversa:
 import argparse
 import uuid
 
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import HumanMessage
 
 from emporio_agent.agent import build_agent
 from emporio_agent.config import ROOT
@@ -42,10 +42,6 @@ def resolve_thread_id(*, nova: bool, thread: str | None, saved: str | None) -> s
     if nova or not saved:
         return str(uuid.uuid4())
     return saved
-
-
-def _texto(message) -> str:
-    return texto_do_token(message).strip()
 
 
 def texto_do_token(token) -> str:
@@ -96,26 +92,6 @@ def imprimir_resposta(eventos) -> None:
         print()
 
 
-def _print_history(agent, config: dict) -> None:
-    """Mostra as falas já salvas, para a retomada ficar visível no terminal."""
-    state = agent.get_state(config)
-    messages = (state.values or {}).get("messages", [])
-    falas = []
-    for message in messages:
-        texto = _texto(message)
-        if not texto:
-            continue
-        if isinstance(message, HumanMessage):
-            falas.append(f"Você: {texto}")
-        elif isinstance(message, AIMessage) and not message.tool_calls:
-            falas.append(f"🎵 Empório: {texto}")
-    if not falas:
-        return
-    print("\n--- conversa salva ---")
-    print("\n".join(falas))
-    print("--- fim do histórico ---")
-
-
 def _chat(agent, thread_id: str) -> None:
     print("=" * 60)
     print("  Empório da Música — Assistente Virtual")
@@ -123,7 +99,6 @@ def _chat(agent, thread_id: str) -> None:
     print("  /nova começa outra. sair encerra.")
     print("=" * 60)
     config = {"configurable": {"thread_id": thread_id}}
-    _print_history(agent, config)
 
     while True:
         try:
