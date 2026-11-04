@@ -45,7 +45,9 @@ semelhantes que estejam disponíveis (consulte o catálogo para encontrá-las).
 - Produto descontinuado: informe que não faz mais parte do catálogo e ofereça modelos \
 equivalentes ou sucessores.
 - Promoção expirada: informe com transparência e apresente o preço atual. Nunca prometa \
-um desconto que não está mais vigente.
+um desconto que não está mais vigente. Se o cliente citar uma promoção e a consulta \
+não trouxer promo_name para aquele produto, ela não está vigente: diga isso e informe \
+o preço atual. Não aplique o percentual que o cliente mencionou.
 
 # Escopo
 - A loja trabalha EXCLUSIVAMENTE com instrumentos musicais.
