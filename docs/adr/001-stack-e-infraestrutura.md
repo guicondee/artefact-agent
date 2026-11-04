@@ -13,7 +13,7 @@ O desafio pede um agente de atendimento em Python que consulte dados (produtos, 
 - **Linguagem e ambiente:** Python 3.12, `venv` e `requirements.txt` com versões fixadas (`==`) nas dependências diretas, resolvidas em conjunto em 2026-11-03. As transitivas ficam limitadas por elas.
 - **Framework do agente:** LangGraph (agente com tools, ciclo ReAct). LangSmith para tracing, avaliação e interação via LangGraph Studio.
 - **LLM:** `deepseek-flash` (DeepSeek V4.1 Flash) via `langchain-deepseek`. Suporta tool calls e JSON output, contexto de 1M tokens e custo baixo.
-- **Modo thinking do DeepSeek: desligado** (`DEEPSEEK_THINKING=disabled`). A documentação do DeepSeek diz que, com `tools` na requisição, o `reasoning_content` de todos os turnos anteriores precisa ser reenviado. Desligar o thinking evita essa dependência, reduz latência e custo, e o atendimento é majoritariamente consulta + resposta curta.
+- **Modo thinking do DeepSeek: padrão do provedor.** O `ChatDeepSeek` sobe só com o modelo e a chave. O thinking permanece ligado, e o `langchain-deepseek` reenvia o `reasoning_content` entre as tools.
 - **Embeddings:** Gemini (`gemini-embedding-001`), porque o DeepSeek não oferece API de embeddings.
 - **Banco:** um único Postgres 16 com a extensão `pgvector`, via `docker compose`. Separação lógica por schemas: `shop` (dados da loja), `rag` (embeddings das políticas) e `memory` (checkpoints do LangGraph).
 
@@ -30,6 +30,6 @@ O desafio pede um agente de atendimento em Python que consulte dados (produtos, 
 - **Positivas:** ambiente reproduzível (`docker compose up -d` + `pip install -r requirements.txt`); permissões reais no banco; um único serviço para dados, vetores e memória.
 - **Negativas / riscos:**
   - Exige Docker instalado para rodar.
-  - A escolha de thinking desligado foi feita pela documentação e pela simplicidade, sem benchmark próprio. Se a escolha de tools ou a qualidade das respostas ficar fraca, ligar o thinking é a primeira hipótese. Nesse caso é preciso confirmar que o `langchain-deepseek` reenvia o `reasoning_content`.
+  - O thinking ligado aumenta tokens e latência em cada volta de tool. O `langchain-deepseek` reenvia o `reasoning_content`, então o ciclo de tools segue inteiro. Desligar o thinking fica para quando o custo ou o tempo de uma conversa longa passar a doer.
   - `langchain-google-genai` e o tier gratuito do Gemini podem ter limites de requisição.
 - **Quando revisitar:** se o volume de documentos crescer, se a qualidade do tool calling for insuficiente ou se o ambiente de execução do avaliador não tiver Docker.
